@@ -1,0 +1,11 @@
+﻿Build started 2018/9/4 19:12:08.
+     1>Project "E:\VS2013\Projects2013\yfOpenGLES3\yfOpenGLES3\yfOpenGLES3.vcxproj" on node 2 (Build target(s)).
+     1>Link:
+         E:\VS2013\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\VS2013\Projects2013\yfOpenGLES3\Debug\yfOpenGLES3.exe" /INCREMENTAL /NOLOGO ..\Common\Debug\Common.lib "C:\Program Files (x86)\ARM\Mali Developer Tools\Mali OpenGL ES Emulator 3.0.2.g694a9\libGLESv2.lib" "C:\Program Files (x86)\ARM\Mali Developer Tools\Mali OpenGL ES Emulator 3.0.2.g694a9\libEGL.lib" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\VS2013\Projects2013\yfOpenGLES3\Debug\yfOpenGLES3.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/VS2013/Projects2013/OpenGLESGuild/Chapter_8/Simple_VertexShader/Debug/Simple_VertexShader.lib" /MACHINE:X86 Debug\main.obj
+     1>Common.lib(esUtil_win32.obj) : error LNK2019: unresolved external symbol _esMain referenced in function _main
+     1>E:\VS2013\Projects2013\yfOpenGLES3\Debug\yfOpenGLES3.exe : fatal error LNK1120: 1 unresolved externals
+     1>Done Building Project "E:\VS2013\Projects2013\yfOpenGLES3\yfOpenGLES3\yfOpenGLES3.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.08

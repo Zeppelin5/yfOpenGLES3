@@ -1,0 +1,29 @@
+﻿Build started 2018/8/29 16:46:13.
+     1>Project "E:\VS2013\Projects2013\OpenGLESGuild\Common\Common.vcxproj" on node 2 (Build target(s)).
+     1>CustomBuild:
+         Building Custom Rule E:/VS2013/Projects2013/opengles3-book-master/Common/CMakeLists.txt
+         CMake does not need to re-run because E:/VS2013/Projects2013/OpenGLESGuild/Common/CMakeFiles/generate.stamp is up-to-date.
+       ClCompile:
+         E:\VS2013\VC\bin\CL.exe /c /I"E:\VS2013\Projects2013\opengles3-book-master\External\Include" /I"E:\VS2013\Projects2013\opengles3-book-master\Common\Include" /Zi /nologo /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Common.dir\Debug\\" /Fd"Common.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt "E:\VS2013\Projects2013\opengles3-book-master\Common\Source\esShader.c" "E:\VS2013\Projects2013\opengles3-book-master\Common\Source\esShapes.c" "E:\VS2013\Projects2013\opengles3-book-master\Common\Source\esTransform.c" "E:\VS2013\Projects2013\opengles3-book-master\Common\Source\esUtil.c" "E:\VS2013\Projects2013\opengles3-book-master\Common\Source\Win32\esUtil_win32.c"
+         esShader.c
+         esShapes.c
+         esTransform.c
+         esUtil.c
+     1>E:\VS2013\Projects2013\opengles3-book-master\Common\Source\esUtil.c(297): warning C4996: 'vsprintf': This function or variable may be unsafe. Consider using vsprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 E:\VS2013\VC\include\stdio.h(356) : see declaration of 'vsprintf'
+     1>E:\VS2013\Projects2013\opengles3-book-master\Common\Source\esUtil.c(331): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 E:\VS2013\VC\include\stdio.h(211) : see declaration of 'fopen'
+         esUtil_win32.c
+         Generating Code...
+       Lib:
+         E:\VS2013\VC\bin\Lib.exe /OUT:"E:\VS2013\Projects2013\OpenGLESGuild\Common\Debug\Common.lib" /NOLOGO  /machine:X86 Common.dir\Debug\esShader.obj
+         Common.dir\Debug\esShapes.obj
+         Common.dir\Debug\esTransform.obj
+         Common.dir\Debug\esUtil.obj
+         Common.dir\Debug\esUtil_win32.obj
+         Common.vcxproj -> E:\VS2013\Projects2013\OpenGLESGuild\Common\Debug\Common.lib
+     1>Done Building Project "E:\VS2013\Projects2013\OpenGLESGuild\Common\Common.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.50
