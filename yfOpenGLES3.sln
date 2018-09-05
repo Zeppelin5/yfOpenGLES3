@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yfOpenGLES3", "yfOpenGLES3\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MRTs", "MRTs\MRTs.vcxproj", "{F5ABEA48-9D04-38D2-9869-CE5DADF499A2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Instancing", "Instancing\Instancing.vcxproj", "{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,14 @@ Global
 		{F5ABEA48-9D04-38D2-9869-CE5DADF499A2}.Release|Win32.Build.0 = Release|Win32
 		{F5ABEA48-9D04-38D2-9869-CE5DADF499A2}.RelWithDebInfo|Win32.ActiveCfg = RelWithDebInfo|Win32
 		{F5ABEA48-9D04-38D2-9869-CE5DADF499A2}.RelWithDebInfo|Win32.Build.0 = RelWithDebInfo|Win32
+		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.Debug|Win32.Build.0 = Debug|Win32
+		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.MinSizeRel|Win32.ActiveCfg = MinSizeRel|Win32
+		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.MinSizeRel|Win32.Build.0 = MinSizeRel|Win32
+		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.Release|Win32.ActiveCfg = Release|Win32
+		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.Release|Win32.Build.0 = Release|Win32
+		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.RelWithDebInfo|Win32.ActiveCfg = RelWithDebInfo|Win32
+		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.RelWithDebInfo|Win32.Build.0 = RelWithDebInfo|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -243,6 +243,8 @@ int Init(ESContext *esContext)
 		"		color += u_light.specularColor * u_material.specularColor * specularIntensity;		\n"
 		"	}																						\n"
 		"   outColor =texture(s_texture,v_texCoord)+color;											\n"
+//		"   outColor =vec4(vec3(gl_FragCoord.z),1.0f);											\n"
+
 		"}																							\n";
 
 	// Load the shaders and get a linked program object
@@ -298,6 +300,8 @@ int Init(ESContext *esContext)
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
+	glStencilMask(0xFFFF);
 	return GL_TRUE;
 }
 
@@ -352,7 +356,7 @@ void Draw(ESContext *esContext)
 	glViewport(0, 0, esContext->width, esContext->height);
 
 	// Clear the color buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	// Use the program object
 	glUseProgram(userData->programObject);
