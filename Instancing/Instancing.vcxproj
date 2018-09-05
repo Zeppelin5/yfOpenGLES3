@@ -308,9 +308,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Instancing.c" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="E:\VS2013\Projects2013\OpenGLES3build0905\ZERO_CHECK.vcxproj">
       <Project>{3D0C0B35-F594-38F6-9E4A-766E3A737926}</Project>
       <Name>ZERO_CHECK</Name>
@@ -319,6 +316,12 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Project>{7443814F-C1D4-375B-BB00-C944800E83DB}</Project>
       <Name>Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Instancing.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

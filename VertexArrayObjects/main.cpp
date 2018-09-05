@@ -275,10 +275,9 @@ int Init(ESContext *esContext)
 	//	NULL, NULL, &userData->indices);
 
 	glGenVertexArrays(1, &userData->myVAO);
-	glGenBuffers(1, &userData->myVBO);
-
 	glBindVertexArray(userData->myVAO);
 
+	glGenBuffers(1, &userData->myVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, userData->myVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -289,13 +288,13 @@ int Init(ESContext *esContext)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	// normal coord attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 	// Starting rotation angle for the cube
 	userData->angle = 0.0f;
 
-	userData->samplerLoc = glGetUniformLocation(userData->programObject, "s_texture");
+	//userData->samplerLoc = glGetUniformLocation(userData->programObject, "s_texture");
 	LoadTexture();
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -377,7 +376,6 @@ void Draw(ESContext *esContext)
 	glUniform4fv(g_material.specularColorLocation, 1, material.specularColor);
 	glUniform1f(g_material.specularExponentLocation, material.specularExponent);
 	//***********************
-
 
 	glBindVertexArray(userData->myVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);

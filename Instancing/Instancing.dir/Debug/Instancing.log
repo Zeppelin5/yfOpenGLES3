@@ -1,12 +1,13 @@
-﻿Build started 2018/9/5 11:27:24.
+﻿Build started 2018/9/5 19:06:39.
      1>Project "E:\VS2013\Projects2013\yfOpenGLES3\Instancing\Instancing.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          E:\VS2013\VC\bin\CL.exe /c /I"E:\VS2013\Projects2013\opengles3-book-master\External\Include" /I"E:\VS2013\Projects2013\opengles3-book-master\Common\Include" /Zi /nologo /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Instancing.dir\Debug\\" /Fd"Instancing.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt Instancing.c
          Instancing.c
+     1>Instancing.c(110): warning C4101: 'positions' : unreferenced local variable
+     1>Instancing.c(111): warning C4101: 'indices' : unreferenced local variable
        Link:
          E:\VS2013\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_7\Instancing\Debug\Instancing.exe" /INCREMENTAL /NOLOGO ..\Common\Debug\Common.lib "C:\Program Files (x86)\ARM\Mali Developer Tools\Mali OpenGL ES Emulator 3.0.2.g694a9\libGLESv2.lib" "C:\Program Files (x86)\ARM\Mali Developer Tools\Mali OpenGL ES Emulator 3.0.2.g694a9\libEGL.lib" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/VS2013/Projects2013/OpenGLES3build0905/Chapter_7/Instancing/Debug/Instancing.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/VS2013/Projects2013/OpenGLES3build0905/Chapter_7/Instancing/Debug/Instancing.lib" /MACHINE:X86 /SAFESEH  /machine:X86 Instancing.dir\Debug\Instancing.obj
      1>Common.lib(esShader.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'Common.lib(esShader.obj)' or at 'E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_7\Instancing\Debug\vc120.pdb'; linking object as if no debug info
-     1>Common.lib(esShapes.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'Common.lib(esShapes.obj)' or at 'E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_7\Instancing\Debug\vc120.pdb'; linking object as if no debug info
      1>Common.lib(esTransform.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'Common.lib(esTransform.obj)' or at 'E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_7\Instancing\Debug\vc120.pdb'; linking object as if no debug info
      1>Common.lib(esUtil.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'Common.lib(esUtil.obj)' or at 'E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_7\Instancing\Debug\vc120.pdb'; linking object as if no debug info
      1>Common.lib(esUtil_win32.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'Common.lib(esUtil_win32.obj)' or at 'E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_7\Instancing\Debug\vc120.pdb'; linking object as if no debug info
@@ -15,4 +16,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.30
+Time Elapsed 00:00:00.38
