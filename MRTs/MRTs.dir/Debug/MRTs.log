@@ -1,4 +1,4 @@
-﻿Build started 2018/9/5 11:24:09.
+﻿Build started 2018/9/5 11:42:47.
      1>Project "E:\VS2013\Projects2013\yfOpenGLES3\MRTs\MRTs.vcxproj" on node 2 (Build target(s)).
      1>C:\Program Files (x86)\MSBuild\12.0\bin\Microsoft.Common.CurrentVersion.targets(1492,5): warning : The referenced project 'E:\VS2013\Projects2013\OpenGLES3build0904\ZERO_CHECK.vcxproj' does not exist.
      1>C:\Program Files (x86)\MSBuild\12.0\bin\Microsoft.Common.CurrentVersion.targets(1492,5): warning : The referenced project 'E:\VS2013\Projects2013\OpenGLES3build0904\Common\Common.vcxproj' does not exist.
@@ -18,4 +18,4 @@
 
 Build FAILED.
 
-Time Elapsed 00:00:00.12
+Time Elapsed 00:00:00.11
