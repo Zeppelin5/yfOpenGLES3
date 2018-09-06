@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VertexArrayObjects", "Verte
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Instancing", "Instancing\Instancing.vcxproj", "{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MRTs", "MRTs\MRTs.vcxproj", "{383DD537-7545-3849-8A53-C153A503EF0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -41,6 +43,14 @@ Global
 		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.Release|Win32.Build.0 = Release|Win32
 		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.RelWithDebInfo|Win32.ActiveCfg = RelWithDebInfo|Win32
 		{E2BB869B-D6F4-35CF-B809-5F63E1FA28FA}.RelWithDebInfo|Win32.Build.0 = RelWithDebInfo|Win32
+		{383DD537-7545-3849-8A53-C153A503EF0E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{383DD537-7545-3849-8A53-C153A503EF0E}.Debug|Win32.Build.0 = Debug|Win32
+		{383DD537-7545-3849-8A53-C153A503EF0E}.MinSizeRel|Win32.ActiveCfg = MinSizeRel|Win32
+		{383DD537-7545-3849-8A53-C153A503EF0E}.MinSizeRel|Win32.Build.0 = MinSizeRel|Win32
+		{383DD537-7545-3849-8A53-C153A503EF0E}.Release|Win32.ActiveCfg = Release|Win32
+		{383DD537-7545-3849-8A53-C153A503EF0E}.Release|Win32.Build.0 = Release|Win32
+		{383DD537-7545-3849-8A53-C153A503EF0E}.RelWithDebInfo|Win32.ActiveCfg = RelWithDebInfo|Win32
+		{383DD537-7545-3849-8A53-C153A503EF0E}.RelWithDebInfo|Win32.Build.0 = RelWithDebInfo|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
