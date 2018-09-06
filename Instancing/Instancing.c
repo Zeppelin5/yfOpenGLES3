@@ -117,7 +117,7 @@ int Init ( ESContext *esContext )
 	   "layout(location = 1) in vec2 a_texCoord;			\n"
 	   "layout(location = 2) in vec4 a_color;				\n"
 	   "layout(location = 3) in mat4 a_mvpMatrix;			\n"
-	   "out vec4 v_color;									\n"
+	   "smooth centroid out vec4 v_color;									\n"
 	   "out vec2 v_texCoord;								\n"
 	   "void main()											\n"
 	   "{													\n"
@@ -154,6 +154,7 @@ int Init ( ESContext *esContext )
    // texture coord attribute
    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
    glEnableVertexAttribArray(1);
+
    LoadTexture();
 
    // Random color for each instance
@@ -210,6 +211,7 @@ int Init ( ESContext *esContext )
    glBindBuffer ( GL_ARRAY_BUFFER, 0 );
 
    glClearColor ( 1.0f, 1.0f, 1.0f, 0.0f );
+
    return GL_TRUE;
 }
 
