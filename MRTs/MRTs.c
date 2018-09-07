@@ -1,44 +1,8 @@
-// The MIT License (MIT)
-//
-// Copyright (c) 2013 Dan Ginsburg, Budirijanto Purnomo
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
-//
-// Book:      OpenGL(R) ES 3.0 Programming Guide, 2nd Edition
-// Authors:   Dan Ginsburg, Budirijanto Purnomo, Dave Shreiner, Aaftab Munshi
-// ISBN-10:   0-321-93388-5
-// ISBN-13:   978-0-321-93388-1
-// Publisher: Addison-Wesley Professional
-// URLs:      http://www.opengles-book.com
-//            http://my.safaribooksonline.com/book/animation-and-3d/9780133440133
-//
-// MRTs.c
-//
-//    This is an example to demonstrate Multiple Render Targets and framebuffer blits.
-//    First, we will render a quad that outputs four colors (red, green, blue, gray)
-//    per fragment using MRTs.
-//    Then, we will copy the four color buffers into four screen quadrants
-//    using framebuffer blits.
-//
+//yf's version
+#define STB_IMAGE_IMPLEMENTATION
 #include <stdlib.h>
 #include "esUtil.h"
+#include "stb_image.h"
 
 typedef struct
 {
@@ -48,245 +12,292 @@ typedef struct
    // Handle to a framebuffer object
    GLuint fbo;
 
-   // Texture handle
-   GLuint colorTexId[4];
+   GLuint cubeVAO, cubeVBO;
+   GLuint floorVAO, floorVBO;
+   GLuint quadVAO, quadVBO;
+   GLuint framebuffer;
 
-   // Texture size
-   GLsizei textureWidth;
-   GLsizei textureHeight;
+   ESMatrix mvMatrix;
+   ESMatrix mvpMatrix;
 
+   GLuint mvLoc;
+   GLuint mvpLoc;
+
+   GLuint cubeTexture;
+   GLuint floorTexture;
+
+   // Rotation angle
+   GLfloat angle;
+
+   GLuint texIDfloor;
+   GLuint texIDcube;
 } UserData;
 
-///
-// Initialize the framebuffer object and MRTs
-//
-int InitFBO ( ESContext *esContext )
+GLfloat cubeVertices[] = {
+	// Positions          // Texture Coords
+	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+	0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+	0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+	0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+	-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
+	-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+	-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+	-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+	0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+	0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+	0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+	0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+	0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+	-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f
+};
+GLfloat floorVertices[] = {
+	// Positions          // Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
+	5.0f, -0.5f, 5.0f, 2.0f, 0.0f,
+	-5.0f, -0.5f, 5.0f, 0.0f, 0.0f,
+	-5.0f, -0.5f, -5.0f, 0.0f, 2.0f,
+
+	5.0f, -0.5f, 5.0f, 2.0f, 0.0f,
+	-5.0f, -0.5f, -5.0f, 0.0f, 2.0f,
+	5.0f, -0.5f, -5.0f, 2.0f, 2.0f
+};
+//渲染到这个四边形
+GLfloat quadVertices[] = {   // Vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+	// Positions   // TexCoords
+	-1.0f, 1.0f, 0.0f, 1.0f,
+	-1.0f, -1.0f, 0.0f, 0.0f,
+	1.0f, -1.0f, 1.0f, 0.0f,
+
+	-1.0f, 1.0f, 0.0f, 1.0f,
+	1.0f, -1.0f, 1.0f, 0.0f,
+	1.0f, 1.0f, 1.0f, 1.0f
+};
+
+GLuint screenWidth = 400;
+GLuint screenHeight = 400;
+
+GLuint LoadTextureFile(const char* filename)
 {
-   UserData *userData = esContext->userData;
-   int i;
-   GLint defaultFramebuffer = 0;
-   const GLenum attachments[4] = 
-   { 
-      GL_COLOR_ATTACHMENT0,
-      GL_COLOR_ATTACHMENT1,
-      GL_COLOR_ATTACHMENT2,
-      GL_COLOR_ATTACHMENT3 
-   };
-
-   glGetIntegerv ( GL_FRAMEBUFFER_BINDING, &defaultFramebuffer );//作用不明
-
-   // Setup fbo
-   glGenFramebuffers ( 1, &userData->fbo );
-   glBindFramebuffer ( GL_FRAMEBUFFER, userData->fbo );
-
-   // Setup four output buffers and attach to fbo
-   userData->textureHeight = userData->textureWidth = 400;
-   glGenTextures ( 4, &userData->colorTexId[0] );
-   for (i = 0; i < 4; ++i)
-   {
-      glBindTexture ( GL_TEXTURE_2D, userData->colorTexId[i] );
-
-      glTexImage2D ( GL_TEXTURE_2D, 0, GL_RGBA, 
-                     userData->textureWidth, userData->textureHeight, 
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
-
-      // Set the filtering mode
-      glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-      glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-
-	  glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i,
-                               GL_TEXTURE_2D, userData->colorTexId[i], 0 );
-	  //glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachments[i],
-		 // GL_TEXTURE_2D, userData->colorTexId[i], 0);
-   }
-
-   glDrawBuffers ( 4, attachments );
-   //由于我们使用了多渲染目标，我们需要显式告诉OpenGL我们需要使用glDrawBuffers渲染的是和GBuffer关联的哪个颜色缓冲。
-
-   if ( GL_FRAMEBUFFER_COMPLETE != glCheckFramebufferStatus ( GL_FRAMEBUFFER ) )
-   {
-      return FALSE;
-   }
-
-   // Restore the original framebuffer
-   //glBindFramebuffer ( GL_FRAMEBUFFER, defaultFramebuffer );
-   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-   return TRUE;
+	GLuint texID;
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_2D, texID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int width, height, nrChannels;
+	unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+		printf("Failed to load texture\n");
+	stbi_image_free(data);
+	return texID;
 }
 
-///
-// Initialize the shader and program object
-//
+GLuint generateAttachmentTexture(GLboolean depth,GLboolean stencil){
+	GLenum attachment_type;
+	if (!depth && !stencil) attachment_type = GL_RGB;
+	//else if (depth && !stencil) attachment_type = GL_DEPTH_COMPONENT;
+	//else if (!depth && stencil) attachment_type = GL_STENCIL_COMPONENTS;
+	GLuint texID;
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_2D, texID);
+	//texID挂载为attachment_type的附件
+	glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, screenWidth, screenHeight, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return texID;
+}
+
 int Init ( ESContext *esContext )
 {
    UserData *userData = esContext->userData;
    char vShaderStr[] =
-      "#version 300 es                            \n"
-      "layout(location = 0) in vec4 a_position;   \n"
-      "void main()                                \n"
-      "{                                          \n"
-      "   gl_Position = a_position;               \n"
-      "}                                          \n";
+	   "#version 300 es										 \n"
+	   "layout(location = 0) in vec4 a_position;			 \n"
+	   "layout(location = 1) in vec2 a_texCoord;			 \n"
+	   "uniform mat4 u_mvpMatrix;							 \n"
+	   "out vec2 v_texCoord;								 \n"
+	   "void main()											 \n"
+	   "{													 \n"
+	   "    gl_Position = u_mvpMatrix * a_position;			 \n"
+	   "	v_texCoord=a_texCoord;						     \n"
+	   "}													 \n";
 
    char fShaderStr[] =
-       "#version 300 es                                     \n"
-       "precision mediump float;                            \n"
-	   "layout(location = 0) out vec4 fragData0;            \n"
-	   "layout(location = 1) out vec4 fragData1;            \n"
-	   "layout(location = 2) out vec4 fragData2;            \n"
-	   "layout(location = 3) out vec4 fragData3;            \n"
-       "void main()                                         \n"
-       "{                                                   \n"
-       "  // first buffer will contain red color            \n"
-       "  fragData0 = vec4 ( 1, 0, 0, 1 );                  \n"
-       "                                                    \n"
-       "  // second buffer will contain green color         \n"
-       "  fragData1 = vec4 ( 0, 1, 0, 1 );                  \n"
-       "                                                    \n"
-       "  // third buffer will contain blue color           \n"
-       "  fragData2 = vec4 ( 0, 0, 1, 1 );                  \n"
-       "                                                    \n"
-       "  // fourth buffer will contain gray color          \n"            
-       "  fragData3 = vec4 ( 0.5, 0.5, 0.5, 1 );            \n"
-       "}                                                   \n";
+	   "#version 300 es                                      \n"
+	   "precision mediump float;							 \n"
+	   "in vec2 v_texCoord;									 \n"
+	   "uniform sampler2D screenTexture;					 \n"
+	   "out vec4 outColor;									 \n"
+	   "void main()											 \n"
+	   "{													 \n"
+	   "	outColor = texture(screenTexture,v_texCoord);	 \n"
+	   "}                                                    \n";
 
    // Load the shaders and get a linked program object
    userData->programObject = esLoadProgram ( vShaderStr, fShaderStr );
+   userData->angle = 0.0f;
+   userData->mvLoc = glGetUniformLocation(userData->programObject, "u_mvMatrix");
+   userData->mvpLoc = glGetUniformLocation(userData->programObject, "u_mvpMatrix");
+   //cube
+   glGenVertexArrays(1, &userData->cubeVAO);//初始化cube的vao
+   glGenBuffers(1, &userData->cubeVBO);//初始化装载cube属性的vbo
+   glBindVertexArray(userData->cubeVAO);//以下操作对cubeVAO负责
+   glBindBuffer(GL_ARRAY_BUFFER, userData->cubeVBO);//以下操作对cubeVBO负责
+   glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);//复制数据到当前vbo 
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (GLvoid*)0);//设置顶点位置
+   glEnableVertexAttribArray(0);
+   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (GLvoid*)(sizeof(GLfloat) * 3));
+   glEnableVertexAttribArray(1);
+   userData->texIDcube = LoadTextureFile("container.jpg");
+   glBindVertexArray(0);//完成cubeVAO的设置
+   //floor
+   glGenVertexArrays(1, &userData->floorVAO);//初始化地板vao
+   glGenBuffers(1, &userData->floorVBO);
+   glBindVertexArray(userData->floorVAO);
+   glBindBuffer(GL_ARRAY_BUFFER, userData->floorVBO);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
+   glEnableVertexAttribArray(0);
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (GLvoid*)0);
+   glEnableVertexAttribArray(1);
+   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (GLvoid*)(sizeof(GLfloat) * 3));
+   userData->texIDfloor=LoadTextureFile("brick_DIFF.bmp");
+   glBindVertexArray(0);//完成floorVAO的设置
+   //quad
+   glGenVertexArrays(1, &userData->quadVAO);
+   glGenBuffers(1, &userData->quadVBO);
+   glBindVertexArray(userData->quadVAO);
+   glBindBuffer(GL_ARRAY_BUFFER, userData->quadVBO);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+   glEnableVertexAttribArray(0);
+   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4, (GLvoid*)0);
+   glEnableVertexAttribArray(1);
+   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4, (GLvoid*)(sizeof(GLfloat) * 2));
+   glBindVertexArray(0);
 
-   InitFBO ( esContext );
+   //设置FBO
+   glGenFramebuffers(1, &userData->framebuffer);//初始化帧缓冲framebuffer
+   glBindFramebuffer(GL_FRAMEBUFFER, userData->framebuffer);//以下代码对framebuffer负责,包括纹理附件设置和rbo附件设置
 
+   GLuint texAttach; 
+   texAttach = generateAttachmentTexture(GL_FALSE, GL_FALSE);//纹理附件
+   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texAttach, 0);////完成纹理附件设置
+   GLuint rbo;
+   glGenRenderbuffers(1, &rbo);//初始化rbo附件
+   glBindRenderbuffer(GL_RENDERBUFFER, rbo);//以下操作对rbo负责
+   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, screenWidth, screenHeight);
+   glBindRenderbuffer(GL_RENDERBUFFER, 0);//完成对rbo的设置
+
+   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);//完成rbo附件设置
+   glBindFramebuffer(GL_FRAMEBUFFER, 0);//完成fbo的设置
+
+   
    glClearColor ( 1.0f, 1.0f, 1.0f, 0.0f );
+   glEnable(GL_DEPTH_TEST);
    return TRUE;
 }
 
-///
-// Draw a quad and output four colors per pixel
-//
-void DrawGeometry ( ESContext *esContext )
+void Update( ESContext *esContext ,float deltaTime)
 {
-   UserData *userData = esContext->userData;
-   GLfloat vVertices[] = { -1.0f,  1.0f, 0.0f,
-                           -1.0f, -1.0f, 0.0f,
-                            1.0f, -1.0f, 0.0f,
-                            1.0f,  1.0f, 0.0f,
-                         };
-   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
+	UserData *userData = esContext->userData;
 
-   // Set the viewport
-   glViewport ( 0, 0, esContext->width, esContext->height );
+	userData->angle += (deltaTime * 50.0f);
+	if (userData->angle >= 360.0f)
+		userData->angle -= 360.0f;
 
-   // Clear the color buffer
-   glClear ( GL_COLOR_BUFFER_BIT );
+	esMatrixLoadIdentity(&userData->mvMatrix);
+	esTranslate(&userData->mvMatrix, 0.0f, 0.0f, -3.0f);
+	esRotate(&userData->mvMatrix, userData->angle, 0.0f, 1.0f, 0.0f);
 
-   // Use the program object
-   glUseProgram ( userData->programObject );
+	ESMatrix perspective;
+	esMatrixLoadIdentity(&perspective);//单位化一个矩阵作为透视投影矩阵
+	float aspect = (GLfloat)esContext->width / ((GLfloat)esContext->height);
+	esPerspective(&perspective, 60.f, aspect, 0.2f, 20.f);
 
-   // Load the vertex position
-   glVertexAttribPointer ( 0, 3, GL_FLOAT,
-                           GL_FALSE, 3 * sizeof ( GLfloat ), vVertices );
-   glEnableVertexAttribArray ( 0 );
-
-   // Draw a quad
-   glDrawElements ( GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices );
+	esMatrixMultiply(&userData->mvpMatrix, &userData->mvMatrix, &perspective);
 }
 
-///
-// Copy MRT output buffers to screen
-//
-void BlitTextures ( ESContext *esContext )//区位块传送
-{
-   UserData *userData = esContext->userData;
-
-   // set the fbo for reading
-   glBindFramebuffer ( GL_READ_FRAMEBUFFER, userData->fbo );
- 
-   // Copy the output red buffer to lower left quadrant
-   glReadBuffer ( GL_COLOR_ATTACHMENT0 );
-   glBlitFramebuffer ( 0, 0, userData->textureWidth, userData->textureHeight,
-                       0, 0, esContext->width/2, esContext->height/2, 
-                       GL_COLOR_BUFFER_BIT, GL_LINEAR );
-
-   // Copy the output green buffer to lower right quadrant
-   glReadBuffer ( GL_COLOR_ATTACHMENT1 );
-   glBlitFramebuffer ( 0, 0, userData->textureWidth, userData->textureHeight,
-                       esContext->width/2, 0, esContext->width, esContext->height/2, 
-                       GL_COLOR_BUFFER_BIT, GL_LINEAR );
-
-   // Copy the output blue buffer to upper left quadrant
-   glReadBuffer ( GL_COLOR_ATTACHMENT2 );
-   glBlitFramebuffer ( 0, 0, userData->textureWidth, userData->textureHeight,
-                       0, esContext->height/2, esContext->width/2, esContext->height, 
-                       GL_COLOR_BUFFER_BIT, GL_LINEAR );
-
-   // Copy the output gray buffer to upper right quadrant
-   glReadBuffer ( GL_COLOR_ATTACHMENT3 );
-   glBlitFramebuffer ( 0, 0, userData->textureWidth, userData->textureHeight,
-                       esContext->width/2, esContext->height/2, esContext->width, esContext->height, 
-                       GL_COLOR_BUFFER_BIT, GL_LINEAR );
-}
-
-///
-// Render to MRTs and screen
-//
 void Draw ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
-   GLint defaultFramebuffer = 0;
-   const GLenum attachments[4] = 
-   { 
-      GL_COLOR_ATTACHMENT0,
-      GL_COLOR_ATTACHMENT1,
-      GL_COLOR_ATTACHMENT2,
-      GL_COLOR_ATTACHMENT3 
-   };
-   
-   glGetIntegerv ( GL_FRAMEBUFFER_BINDING, &defaultFramebuffer );
+	UserData *userData = esContext->userData;
+	glViewport(0, 0, esContext->width, esContext->height);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glUseProgram(userData->programObject);
+	
+	glUniformMatrix4fv(userData->mvpLoc, 1, GL_FALSE, (GLfloat *)&userData->mvpMatrix);
 
-   // FIRST: use MRTs to output four colors to four buffers
-   glBindFramebuffer ( GL_FRAMEBUFFER, userData->fbo );
-   glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-   glDrawBuffers ( 4, attachments );
-   DrawGeometry ( esContext );
+	glBindVertexArray(userData->cubeVAO);
+	glBindTexture(GL_TEXTURE_2D, userData->texIDcube);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
 
-   // SECOND: copy the four output buffers into four window quadrants
-   // with framebuffer blits
+	glBindVertexArray(userData->floorVAO);
+	glBindTexture(GL_TEXTURE_2D, userData->texIDfloor);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
 
-   // Restore the default framebuffer
-   glBindFramebuffer ( GL_DRAW_FRAMEBUFFER, defaultFramebuffer );
-   BlitTextures ( esContext );
+	glCullFace(GL_FRONT);
 }
 
-///
-// Cleanup
-//
 void ShutDown ( ESContext *esContext )
 {
-   UserData *userData = esContext->userData;
+	UserData *userData = esContext->userData;
 
-   // Delete texture objects
-   glDeleteTextures ( 4, userData->colorTexId );
+	glDeleteVertexArrays(1, &userData->cubeVAO);
+	glDeleteBuffers(1, &userData->cubeVBO);
+	glDeleteVertexArrays(1, &userData->floorVAO);
+	glDeleteBuffers(1, &userData->floorVBO);
+	glDeleteVertexArrays(1, &userData->quadVAO);
+	glDeleteBuffers(1, &userData->quadVBO);
 
-   // Delete fbo
-   glDeleteFramebuffers ( 1, &userData->fbo );
-
-   // Delete program object
-   glDeleteProgram ( userData->programObject );
+	glDeleteProgram(userData->programObject);
 }
 
 int esMain ( ESContext *esContext )
 {
    esContext->userData = malloc ( sizeof ( UserData ) );
 
-   esCreateWindow ( esContext, "Multiple Render Targets", 400, 400, ES_WINDOW_RGB | ES_WINDOW_ALPHA );
+   esCreateWindow(esContext, "FBO Demo", screenWidth, screenHeight, ES_WINDOW_RGB | ES_WINDOW_ALPHA | ES_WINDOW_DEPTH);
 
    if ( !Init ( esContext ) )
    {
       return GL_FALSE;
    }
-
+   esRegisterShutdownFunc(esContext, ShutDown);
+   esRegisterUpdateFunc(esContext, Update);
    esRegisterDrawFunc ( esContext, Draw );
-   esRegisterShutdownFunc ( esContext, ShutDown );
 
    return GL_TRUE;
 }
