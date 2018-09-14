@@ -1,4 +1,4 @@
-﻿Build started 2018/9/7 19:28:54.
+﻿Build started 2018/9/14 15:26:22.
      1>Project "E:\VS2013\Projects2013\yfOpenGLES3\MRTs\MRTs.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          E:\VS2013\VC\bin\CL.exe /c /I"E:\VS2013\Projects2013\opengles3-book-master\External\Include" /I"E:\VS2013\Projects2013\opengles3-book-master\Common\Include" /Zi /nologo /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"MRTs.dir\Debug\\" /Fd"MRTs.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt MRTs.c
@@ -10,4 +10,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.35
+Time Elapsed 00:00:00.33

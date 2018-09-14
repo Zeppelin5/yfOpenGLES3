@@ -8,6 +8,7 @@ typedef struct
 {
    // Handle to a program object
    GLuint programObject;
+   GLuint programObjectQuad;
 
    // Handle to a framebuffer object
    GLuint fbo;
@@ -31,6 +32,8 @@ typedef struct
 
    GLuint texIDfloor;
    GLuint texIDcube;
+
+   GLuint texColorbuffer;
 } UserData;
 
 GLfloat cubeVertices[] = {
@@ -140,34 +143,60 @@ GLuint generateAttachmentTexture(GLboolean depth,GLboolean stencil){
 	return texID;
 }
 
+char vShaderStr[] =
+"#version 300 es										 \n"
+"layout(location = 0) in vec4 a_position;			 \n"
+"layout(location = 1) in vec2 a_texCoord;			 \n"
+"uniform mat4 u_mvpMatrix;							 \n"
+"out vec2 v_texCoord;								 \n"
+"void main()											 \n"
+"{													 \n"
+"    gl_Position = u_mvpMatrix * a_position;			 \n"
+"	 v_texCoord=a_texCoord;						     \n"
+"}													 \n";
+
+char fShaderStr[] =
+"#version 300 es                                      \n"
+"precision mediump float;							 \n"
+"in vec2 v_texCoord;									 \n"
+"uniform sampler2D screenTexture;					 \n"
+"out vec4 outColor;									 \n"
+"void main()											 \n"
+"{													 \n"
+"	outColor = texture(screenTexture,v_texCoord);	 \n"
+"}                                                    \n";
+
+char vScreenShaderStr[] =
+"#version 300 es													\n"
+"layout(location = 0) in vec2 a_position;							\n"
+"layout(location = 1) in vec2 texCoord;								\n"
+"out vec2 v_texCoord;												\n"
+"void main()														\n"
+"{																	\n"
+"   gl_Position = vec4(a_position.x,a_position.y,0.0,1.0);            \n"
+"   v_texCoord=texCoord;											\n"
+"}																    \n";
+char fScreenShaderStr[] =
+"#version 300 es													\n"
+"precision mediump float;											\n"
+"out vec4 outColor;													\n"
+"in vec2 v_texCoord;												\n"
+"uniform sampler2D Texture;											\n"
+"void main()														\n"
+"{																	\n"
+//"	vec3 texColor=texture(Texture,v_texCoord).rgb;						\n"
+//"	outColor=vec4(texColor,1.0);									\n"
+"	outColor=texture(Texture,v_texCoord);							\n"
+"}																	\n";
+
 int Init ( ESContext *esContext )
 {
    UserData *userData = esContext->userData;
-   char vShaderStr[] =
-	   "#version 300 es										 \n"
-	   "layout(location = 0) in vec4 a_position;			 \n"
-	   "layout(location = 1) in vec2 a_texCoord;			 \n"
-	   "uniform mat4 u_mvpMatrix;							 \n"
-	   "out vec2 v_texCoord;								 \n"
-	   "void main()											 \n"
-	   "{													 \n"
-	   "    gl_Position = u_mvpMatrix * a_position;			 \n"
-	   "	v_texCoord=a_texCoord;						     \n"
-	   "}													 \n";
-
-   char fShaderStr[] =
-	   "#version 300 es                                      \n"
-	   "precision mediump float;							 \n"
-	   "in vec2 v_texCoord;									 \n"
-	   "uniform sampler2D screenTexture;					 \n"
-	   "out vec4 outColor;									 \n"
-	   "void main()											 \n"
-	   "{													 \n"
-	   "	outColor = texture(screenTexture,v_texCoord);	 \n"
-	   "}                                                    \n";
 
    // Load the shaders and get a linked program object
    userData->programObject = esLoadProgram ( vShaderStr, fShaderStr );
+   userData->programObjectQuad = esLoadProgram(vScreenShaderStr, fScreenShaderStr);
+
    userData->angle = 0.0f;
    userData->mvLoc = glGetUniformLocation(userData->programObject, "u_mvMatrix");
    userData->mvpLoc = glGetUniformLocation(userData->programObject, "u_mvpMatrix");
@@ -210,19 +239,20 @@ int Init ( ESContext *esContext )
    //设置FBO
    glGenFramebuffers(1, &userData->framebuffer);//初始化帧缓冲framebuffer
    glBindFramebuffer(GL_FRAMEBUFFER, userData->framebuffer);//以下代码对framebuffer负责,包括纹理附件设置和rbo附件设置
-
-   GLuint texAttach; 
-   texAttach = generateAttachmentTexture(GL_FALSE, GL_FALSE);//纹理附件
-   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texAttach, 0);////完成纹理附件设置
+   userData->texColorbuffer = generateAttachmentTexture(GL_FALSE, GL_FALSE);//纹理附件
+   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, userData->texColorbuffer, 0);//完成FBO的纹理附件挂载
+   
+   //设置渲染缓冲对象附件
    GLuint rbo;
    glGenRenderbuffers(1, &rbo);//初始化rbo附件
    glBindRenderbuffer(GL_RENDERBUFFER, rbo);//以下操作对rbo负责
    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, screenWidth, screenHeight);
    glBindRenderbuffer(GL_RENDERBUFFER, 0);//完成对rbo的设置
+   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);//完成FBO的rbo附件挂载
 
-   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);//完成rbo附件设置
-   glBindFramebuffer(GL_FRAMEBUFFER, 0);//完成fbo的设置
-
+   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	   printf("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+   glBindFramebuffer(GL_FRAMEBUFFER, 0);//完成fbo的设置，解绑
    
    glClearColor ( 1.0f, 1.0f, 1.0f, 0.0f );
    glEnable(GL_DEPTH_TEST);
@@ -251,10 +281,16 @@ void Update( ESContext *esContext ,float deltaTime)
 
 void Draw ( ESContext *esContext )
 {
+
 	UserData *userData = esContext->userData;
 	glViewport(0, 0, esContext->width, esContext->height);
+	// Bind to framebuffer and draw to color texture 
+	// as we normally would.
+	glBindFramebuffer(GL_FRAMEBUFFER, userData->framebuffer);
+	// Clear all attached buffers  
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glUseProgram(userData->programObject);
+	glEnable(GL_DEPTH_TEST);
+	glUseProgram(userData->programObject);//启用programObject
 	
 	glUniformMatrix4fv(userData->mvpLoc, 1, GL_FALSE, (GLfloat *)&userData->mvpMatrix);
 
@@ -265,6 +301,21 @@ void Draw ( ESContext *esContext )
 
 	glBindVertexArray(userData->floorVAO);
 	glBindTexture(GL_TEXTURE_2D, userData->texIDfloor);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+
+	// Bind to default framebuffer again and draw the 
+	// quad plane with attched screen texture.
+	glUseProgram(userData->programObjectQuad);//启用programObjectQuad
+	glDisable(GL_DEPTH_TEST); // We don't care about depth information when rendering a single quad
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glBindVertexArray(userData->quadVAO);
+	glBindTexture(GL_TEXTURE_2D, userData->texColorbuffer);
+	//glDrawArrays(GL_LINES, 0, 6);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
@@ -283,6 +334,7 @@ void ShutDown ( ESContext *esContext )
 	glDeleteBuffers(1, &userData->quadVBO);
 
 	glDeleteProgram(userData->programObject);
+	glDeleteProgram(userData->programObjectQuad);
 }
 
 int esMain ( ESContext *esContext )
