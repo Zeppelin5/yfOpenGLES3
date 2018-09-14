@@ -165,7 +165,7 @@ char fShaderStr[] =
 "{													 \n"
 "	outColor = texture(screenTexture,v_texCoord);	 \n"
 "}                                                    \n";
-
+//填充quad面片的shader
 char vScreenShaderStr[] =
 "#version 300 es													\n"
 "layout(location = 0) in vec2 a_position;							\n"
@@ -176,6 +176,8 @@ char vScreenShaderStr[] =
 "   gl_Position = vec4(a_position.x,a_position.y,0.0,1.0);            \n"
 "   v_texCoord=texCoord;											\n"
 "}																    \n";
+
+////正常：outColor=texture(Texture,v_texCoord);
 char fScreenShaderStr[] =
 "#version 300 es													\n"
 "precision mediump float;											\n"
@@ -184,10 +186,54 @@ char fScreenShaderStr[] =
 "uniform sampler2D Texture;											\n"
 "void main()														\n"
 "{																	\n"
-//"	vec3 texColor=texture(Texture,v_texCoord).rgb;						\n"
-//"	outColor=vec4(texColor,1.0);									\n"
-"	outColor=texture(Texture,v_texCoord);							\n"
+//"	outColor=texture(Texture,v_texCoord);							\n"//正常色
+"	outColor=vec4(vec3(1.0-texture(Texture,v_texCoord)),1.0);		\n"//反色
 "}																	\n";
+
+char fScreenShaderStrKernel[] =//核效果着色器
+"#version 300 es													\n"
+"precision mediump float;											\n"
+"const float offset=1.0/300.0;										\n"
+"out vec4 outColor;													\n"
+"in vec2 v_texCoord;												\n"
+"uniform sampler2D Texture;											\n"
+"void main()														\n"
+"{																	\n"
+"	vec2 offsets[9] = vec2[](																\n"
+"	vec2(-offset, offset), 																	\n"
+"	vec2(0.0f, offset), 																	\n"
+"	vec2(offset, offset), 																	\n"
+"	vec2(-offset, 0.0f),   																	\n"
+"	vec2(0.0f, 0.0f),   																	\n"
+"	vec2(offset, 0.0f),   																	\n"
+"	vec2(-offset, -offset), 																\n"
+"	vec2(0.0f, -offset),																	\n"
+"	vec2(offset, -offset) 																	\n"
+"	);																						\n"
+
+//"	float kernel[9] = float[](																\n"
+//"		-1, -1, -1,																			\n"
+//"		-1, 9, -1,																			\n"
+//"		-1, -1, -1																			\n"
+//"		);																					\n"//锐化核
+
+"	float kernel[9] = float[](																\n"
+"		1.0/16.0, 2.0/16.0, 1.0/16.0,														\n"
+"		2.0/16.0, 4.0/16.0, 2.0/16.0,														\n"
+"		1.0/16.0, 2.0/16.0, 1.0/16.0														\n"
+"	);																						\n"//模糊核
+"	vec3 sampleTex[9];																		\n"
+"	for (int i = 0; i < 9; i++)																\n"
+"	{																						\n"
+"		sampleTex[i] = vec3(texture(Texture, v_texCoord.st + offsets[i]));					\n"
+"	}																						\n"
+"	vec3 col = vec3(0.0);																	\n"
+"	for (int i = 0; i < 9; i++)																\n"
+"		col += sampleTex[i] * kernel[i];													\n"
+"	outColor = vec4(col, 1.0);																\n"
+"	if (gl_FragCoord.x < 50.0 && gl_FragCoord.y <50.0)										\n"
+"		outColor = vec4(1.0, 0.0, 0.0, 1.0);												\n"
+"}																							\n";
 
 int Init ( ESContext *esContext )
 {
@@ -195,7 +241,7 @@ int Init ( ESContext *esContext )
 
    // Load the shaders and get a linked program object
    userData->programObject = esLoadProgram ( vShaderStr, fShaderStr );
-   userData->programObjectQuad = esLoadProgram(vScreenShaderStr, fScreenShaderStr);
+   userData->programObjectQuad = esLoadProgram(vScreenShaderStr, fScreenShaderStrKernel);
 
    userData->angle = 0.0f;
    userData->mvLoc = glGetUniformLocation(userData->programObject, "u_mvMatrix");
@@ -283,10 +329,10 @@ void Draw ( ESContext *esContext )
 {
 
 	UserData *userData = esContext->userData;
-	glViewport(0, 0, esContext->width, esContext->height);
-	// Bind to framebuffer and draw to color texture 
-	// as we normally would.
 	glBindFramebuffer(GL_FRAMEBUFFER, userData->framebuffer);
+	glViewport(0, 0, esContext->width, esContext->height);
+	// Bind to framebuffer and draw to color texture as we normally would.
+	
 	// Clear all attached buffers  
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -304,13 +350,12 @@ void Draw ( ESContext *esContext )
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
-	// Bind to default framebuffer again and draw the 
-	// quad plane with attched screen texture.
+	// Bind to default framebuffer again and draw the quad plane with attched screen texture.
 	glUseProgram(userData->programObjectQuad);//启用programObjectQuad
 	glDisable(GL_DEPTH_TEST); // We don't care about depth information when rendering a single quad
 
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
 	glBindVertexArray(userData->quadVAO);
