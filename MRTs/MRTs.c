@@ -128,45 +128,30 @@ GLuint LoadTextureFile(const char* filename)
 	return texID;
 }
 
-GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil){
-	GLenum attachment_type;
-	if (!depth && !stencil) attachment_type = GL_RGB;
-	//else if (depth && !stencil) attachment_type = GL_DEPTH_COMPONENT;
-	//else if (!depth && stencil) attachment_type = GL_STENCIL_COMPONENTS;
-	GLuint texID;
-	glGenTextures(1, &texID);
-	glBindTexture(GL_TEXTURE_2D, texID);
-	//texID挂载为attachment_type的附件
-	glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, screenWidth, screenHeight, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	return texID;
-}
-
 char vShaderStr[] =
 "#version 300 es										 \n"
-"layout(location = 0) in vec4 a_position;			 \n"
-"layout(location = 1) in vec2 a_texCoord;			 \n"
-"uniform mat4 u_mvpMatrix;							 \n"
-"out vec2 v_texCoord;								 \n"
+"layout(location = 0) in vec4 a_position;				 \n"
+"layout(location = 1) in vec2 a_texCoord;				 \n"
+"uniform mat4 u_mvpMatrix;								 \n"
+"out vec2 v_texCoord;									 \n"
 "void main()											 \n"
-"{													 \n"
+"{														 \n"
 "    gl_Position = u_mvpMatrix * a_position;			 \n"
-"	 v_texCoord=a_texCoord;						     \n"
-"}													 \n";
+"	 v_texCoord=a_texCoord;								 \n"
+"}														 \n";
 
 char fShaderStr[] =
-"#version 300 es                                      \n"
-"precision mediump float;							 \n"
+"#version 300 es										 \n"
+"precision mediump float;								 \n"
 "in vec2 v_texCoord;									 \n"
-"uniform sampler2D screenTexture;					 \n"
-"out vec4 outColor;									 \n"
+"uniform sampler2D screenTexture;						 \n"
+"out vec4 outColor;										 \n"
 "void main()											 \n"
-"{													 \n"
-"	outColor = texture(screenTexture,v_texCoord);	 \n"
-"}                                                    \n";
-//填充quad面片的shader
+"{														 \n"
+"	outColor = texture(screenTexture,v_texCoord);		 \n"
+"}														 \n";
+
+//填充quad面片的VS
 char vScreenShaderStr[] =
 "#version 300 es													\n"
 "layout(location = 0) in vec2 a_position;							\n"
@@ -174,7 +159,7 @@ char vScreenShaderStr[] =
 "out vec2 v_texCoord;												\n"
 "void main()														\n"
 "{																	\n"
-"   gl_Position = vec4(a_position.x,a_position.y,0.0,1.0);            \n"
+"   gl_Position = vec4(a_position.x,a_position.y,0.0,1.0);          \n"
 "   v_texCoord=texCoord;											\n"
 "}																    \n";
 
@@ -195,7 +180,6 @@ char fScreenShaderStrKernel[] =//核效果着色器
 "#version 300 es													\n"
 "precision mediump float;											\n"
 "const float offset=1.0/300.0;										\n"
-//"out vec4 outColor;													\n"
 "layout(location = 0) out vec4 outColor0;							\n"
 "layout(location = 1) out vec4 outColor1;							\n"
 "layout(location = 2) out vec4 outColor2;							\n"
@@ -248,9 +232,6 @@ char fScreenShaderStrKernel[] =//核效果着色器
 "	outColor3 = vec4(vec3(1.0-texture(Texture,v_texCoord)),1.0);							\n"//反色3
 "}																							\n";
 
-
-// Copy MRT output buffers to screen
-//
 void BlitTextures(ESContext *esContext)//区位块传送
 {
 	UserData *userData = esContext->userData;
@@ -289,7 +270,7 @@ int Init(ESContext *esContext)
 	userData->textureWidth = 600;
 	userData->textureHeight = 400;
 	// Load the shaders and get a linked program object
-	userData->programObject = esLoadProgram(vShaderStr, fShaderStr);
+	userData->programObject = esLoadProgram(vShaderStr, fShaderStr);//载入文件、附件、编译、判错、删除Shader
 	userData->programObjectQuad = esLoadProgram(vScreenShaderStr, fScreenShaderStrKernel);
 
 	userData->angle = 0.0f;
@@ -371,7 +352,8 @@ int Init(ESContext *esContext)
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		printf("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);//完成fbo的设置，解绑
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);//完成纹理附件和rbo附件的设置，解绑fbo
 
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);//初始刷新一下
 	glEnable(GL_DEPTH_TEST);
@@ -432,21 +414,8 @@ void DrawQuad(ESContext *esContext)
 void Draw(ESContext *esContext)
 {
 	UserData *userData = esContext->userData;
-	GLuint defaultFramebuffer = 0;
-	const GLenum attachments[4] = {
-		GL_COLOR_ATTACHMENT0,
-		GL_COLOR_ATTACHMENT1,
-		GL_COLOR_ATTACHMENT2,
-		GL_COLOR_ATTACHMENT3
-	};
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFramebuffer);
-	//glBindFramebuffer(GL_FRAMEBUFFER, userData->framebuffer);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawBuffers(4, attachments);
-	//glViewport(0, 0, esContext->width, esContext->height);
-
 	DrawQuad(esContext);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, defaultFramebuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	BlitTextures(esContext);
 }
 
@@ -472,7 +441,7 @@ int esMain(ESContext *esContext)
 {
 	esContext->userData = malloc(sizeof(UserData));
 
-	esCreateWindow(esContext, "FBO Demo", screenWidth, screenHeight, ES_WINDOW_RGB | ES_WINDOW_ALPHA | ES_WINDOW_DEPTH);
+	esCreateWindow(esContext, "正常，反色，模糊，锐化", screenWidth, screenHeight, ES_WINDOW_RGB | ES_WINDOW_ALPHA | ES_WINDOW_DEPTH);
 
 	if (!Init(esContext))
 	{
