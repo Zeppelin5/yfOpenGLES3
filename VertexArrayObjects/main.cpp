@@ -67,16 +67,16 @@ struct MaterialProperties
 
 // This is a white light.
 struct LightProperties light = {
-	{ 1.0f, 1.0f, 1.0f },
-	{ 0.3f, 0.3f, 0.3f, 1.0f },
-	{ 1.0f, 1.0f, 1.0f, 1.0f },
-	{ 1.0f, 1.0f, 1.0f, 1.0f } };
+	{ 1.0f, 1.0f, 1.0f },//directionLocation
+	{ 0.1f, 0.1f, 0.1f, 1.0f },	  //ambientColor;
+	{ 1.0f, 0.0f, 0.0f, 1.0f },	  //diffuseColor;
+	{ 1.0f, 0.0f, 0.0f, 1.0f } }; //specularColor;
 // Blue color material with white specular color.
 struct MaterialProperties material = {
-	{ 0.0f, 0.0f, 1.0f, 1.0f },
-	{ 0.0f, 0.0f, 1.0f, 1.0f },
+	{ 0.8f, 0.8f, 0.8f, 1.0f },
 	{ 1.0f, 1.0f, 1.0f, 1.0f },
-	20.0f };
+	{ 0.4f, 0.4f, 0.4f, 1.0f },
+	10.0f };
 
 struct LightLocations
 {
@@ -105,9 +105,7 @@ typedef struct
 	// Uniform locations
 	GLint  mvpLoc;
 	GLint  mvLoc;
-
-	GLint testLoc;
-
+	GLuint mLoc;//模型矩阵的位置，顶点坐标左乘模型矩阵得到世界坐标
 	// Rotation angle
 	GLfloat   angle;
 
@@ -125,6 +123,7 @@ typedef struct
 	GLuint textureID;
 	GLuint samplerLoc;
 
+	GLfloat viewPosLoc[3];
 } UserData;
 
 const static GLuint VERTEX_POS_INDX = 0;//VERTEX_POS_INDX对应shader里location的位置
@@ -160,8 +159,6 @@ void LoadTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-GLfloat testvec[4] = { 1, 1, 1, 1 };
-
 // Initialize the shader and program object
 //
 int Init(ESContext *esContext)
@@ -169,85 +166,75 @@ int Init(ESContext *esContext)
 	UserData *userData = esContext->userData;
 
 	const char vShaderStr[] =
-		"#version 300 es                             \n"
-		"uniform mat4 u_mvpMatrix;                   \n"
-		"uniform mat4 u_mvMatrix;					 \n"
-		"uniform vec4 testUniform;					 \n"
-		"uniform int testInt;						\n"
-		"layout(location = 0) in vec4 a_position;    \n"
-		"layout(location = 1) in vec2 a_texCoord;    \n"
-		"layout(location = 2) in vec3 a_normal;		 \n"
-		"out vec2 v_texCoord;						 \n"
-		"out vec3 v_eye;							 \n"
-		"out vec3 v_normal;							 \n"
-		"void main()                                 \n"
-		"{                                           \n"
-		"   vec4 vertex=u_mvMatrix*a_position;		 \n"
-		"	v_eye=-vec3(vertex);					 \n"
-		"	v_texCoord=a_texCoord;					 \n"
-		"	v_normal=a_normal;						 \n"
-		"   gl_Position = u_mvpMatrix * a_position;  \n"
-		"}                                           \n";
+		"#version 300 es												\n"
+		"uniform mat4 u_mvpMatrix;										\n"
+		"uniform mat4 u_mvMatrix;										\n"
+		"layout(location = 0) in vec4 a_position;						\n"
+		"layout(location = 1) in vec2 a_texCoord;						\n"
+		"layout(location = 2) in vec3 a_normal;							\n"
+		"out vec2 v_texCoord;											\n"
+		"out vec3 v_fragPos;											\n"
+		"out vec3 v_normal;												\n"
+		"void main()													\n"
+		"{																\n"
+		"	v_fragPos=vec3(u_mvMatrix * a_position);					\n"
+		"	v_texCoord=a_texCoord;										\n"
+		"	v_normal=a_normal;											\n"
+		"   gl_Position = u_mvpMatrix * a_position;						\n"
+		"}																\n";
 
 	const char fShaderStr[] =
-		"#version 300 es											\n"
-		"precision mediump float;									\n"
+		"#version 300 es												\n"
+		"precision mediump float;										\n"
 
-		"struct LightProperties										 \n"
-		"{															 \n"
-		"	vec3 direction;											 \n"
-		"	vec4 ambientColor;										 \n"
-		"	vec4 diffuseColor;										 \n"
-		"	vec4 specularColor;										 \n"
-		"};															 \n"
-		"															 \n"
-		"struct MaterialProperties									 \n"
-		"{															 \n"
-		"	vec4 ambientColor;										 \n"
-		"	vec4 diffuseColor;										 \n"
-		"	vec4 specularColor;										 \n"
-		"	float specularExponent;									 \n"
-		"};												\n"
-		"															 \n"
-		"uniform LightProperties u_light;						 \n"
-		"uniform MaterialProperties u_material;					 \n"
-		
-		"in vec3 v_eye;															\n"
-		"in vec2 v_texCoord;													\n"
-		"in vec3 v_normal;														\n"
-		"out vec4 outColor;														\n"
-		"uniform sampler2D s_texture;											\n"
-		"void main()															\n"
-		"{																		\n"
-		"	vec4 color = u_light.ambientColor * u_material.ambientColor;		\n"
-		"	vec3 normal =normalize(v_normal);									\n"
-		"	float nDotL = max(dot(u_light.direction, normal), 0.0);				\n"
-		"	if (nDotL > 0.0)																		\n"
-		"	{																						\n"
-		"		vec3 eye = normalize(v_eye);														\n"
-		"																							\n"
-		"		// Incident vector is opposite light direction vector.								\n"
-		"		vec3 reflection = reflect(-u_light.direction, normal);								\n"
-		"																							\n"
-		"		float eDotR = max(dot(eye, reflection), 0.0);										\n"
-		"																							\n"
-		"		color += u_light.diffuseColor * u_material.diffuseColor * nDotL;					\n"
-		"																							\n"
+		"struct LightProperties											\n"
+		"{																\n"
+		"	vec3 direction;												\n"
+		"	vec4 ambientColor;											\n"
+		"	vec4 diffuseColor;											\n"
+		"	vec4 specularColor;											\n"
+		"};																\n"
+		"																\n"
+		"struct MaterialProperties										\n"
+		"{																\n"
+		"	vec4 ambientColor;											\n"
+		"	vec4 diffuseColor;											\n"
+		"	vec4 specularColor;											\n"
+		"	float specularExponent;										\n"
+		"};																\n"
+		"																\n"
+		"uniform LightProperties u_light;								\n"
+		"uniform MaterialProperties u_material;							\n"
+		"in vec3 v_fragPos;																				\n"
+		"in vec2 v_texCoord;																		\n"
+		"in vec3 v_normal;																			\n"
+		"out vec4 outColor;																			\n"
+		"uniform sampler2D s_texture;																\n"
+		"void main()																				\n"
+		"{																							\n"
+		"	vec4 color = u_light.ambientColor * u_material.ambientColor;							\n"//ambient
+		"	vec3 N = normalize(v_normal);															\n"
+		"	vec3 L = -normalize(u_light.direction);													\n"
+		"	float nDotL = max(dot(N,L), 0.0);														\n"
+		"	color += u_light.diffuseColor * u_material.diffuseColor * nDotL;						\n"//diffuse
+		//"	if (nDotL > 0.0)																		\n"
+		//"	{																						\n"
+		"		vec3 R = reflect(L,N);																\n"
+		"		vec3 viewPos = vec3(2.f,0.f,0.f);													\n"
+		"		vec3 V=normalize(viewPos-v_fragPos);														\n"
+		"		float VDotR = max(dot(V, R), 0.0);													\n"
 		"		float specularIntensity = 0.0;														\n"
-		"																							\n"
-		"		if (eDotR > 0.0)																	\n"
+		"		if (VDotR > 0.0)																	\n"
 		"		{																					\n"
-		"			specularIntensity = pow(eDotR, u_material.specularExponent);					\n"
+		"			specularIntensity = pow(VDotR, u_material.specularExponent);					\n"
 		"		}																					\n"
-		"																							\n"
-		"		color += u_light.specularColor * u_material.specularColor * specularIntensity;		\n"
-		"	}																						\n"
+		"		color += u_light.specularColor * u_material.specularColor * specularIntensity;		\n"//specular
+		//"	}																						\n"
 		"   outColor =texture(s_texture,v_texCoord)+color;											\n"
-//		"   outColor =vec4(vec3(gl_FragCoord.z),1.0f);											\n"
-
 		"}																							\n";
 
 	// Load the shaders and get a linked program object
+	//7:50arrive home,8:30finish jump,9:00shower over,10:00 relax time,11:20 TV over
 	userData->programObject = esLoadProgram(vShaderStr, fShaderStr);
 	
 	g_light.directionLocation = glGetUniformLocation(userData->programObject, "u_light.direction");
@@ -259,14 +246,11 @@ int Init(ESContext *esContext)
 	g_material.specularColorLocation = glGetUniformLocation(userData->programObject, "u_material.specularColor");
 	g_material.specularExponentLocation = glGetUniformLocation(userData->programObject, "u_material.specularExponent");
 	//The following error occurred in glUniform4fv: GL_INVALID_OPERATION
-	
-	userData->testLoc = glGetUniformLocation(userData->programObject, "testInt");
-
-	//64页，尝试用block来传输试试
 
 	// Get the uniform locations
 	userData->mvpLoc = glGetUniformLocation(userData->programObject, "u_mvpMatrix");
 	userData->mvLoc = glGetUniformLocation(userData->programObject, "u_mvMatrix");
+	//userData->mLoc = glGetUniformLocation(userData->programObject, "u_mMatrix");
 	//// mvpMatrix在Update里用modelview和perspective算出来,
 	//// 然后再Draw里用glUniformMatrix4fv(userData->mvpLoc, 1, GL_FALSE, (GLfloat *)&userData->mvpMatrix)传给mvpLoc
 
@@ -281,6 +265,7 @@ int Init(ESContext *esContext)
 	glBindBuffer(GL_ARRAY_BUFFER, userData->myVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+	//	-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,		0.0f, 0.0f, -1.0f,
 	// position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -312,7 +297,6 @@ void Update(ESContext *esContext, float deltaTime)
 {
 	UserData *userData = esContext->userData;
 	ESMatrix perspective;
-	ESMatrix modelview;
 	float    aspect;
 
 	// Compute a rotation angle based on time to rotate the cube
@@ -322,22 +306,20 @@ void Update(ESContext *esContext, float deltaTime)
 	{
 		userData->angle -= 360.0f;
 	}
-
-	// Compute the window aspect ratio
-	aspect = (GLfloat)esContext->width / (GLfloat)esContext->height;
-
-	// Generate a perspective matrix with a 60 degree FOV
-	esMatrixLoadIdentity(&perspective);
-	esPerspective(&perspective, 60.0f, aspect, 1.0f, 20.0f);
-
 	// Generate a model view matrix to rotate/translate the cube
 	esMatrixLoadIdentity(&userData->mvMatrix);
 
 	// Translate away from the viewer
 	esTranslate(&userData->mvMatrix, 0.0, 0.0, -2.0);
-
 	// Rotate the cube这里是转动物体
 	esRotate(&userData->mvMatrix, userData->angle, 1.0, 0.0, 1.0);
+
+
+	// Compute the window aspect ratio
+	aspect = (GLfloat)esContext->width / (GLfloat)esContext->height;
+	// Generate a perspective matrix with a 60 degree FOV
+	esMatrixLoadIdentity(&perspective);
+	esPerspective(&perspective, 60.0f, aspect, 1.0f, 20.0f);
 
 	// Compute the final MVP by multiplying the
 	// modevleiw and perspective matrices together
@@ -366,7 +348,6 @@ void Draw(ESContext *esContext)
 	glUniformMatrix4fv(userData->mvLoc, 1, GL_FALSE, (GLfloat*)&userData->mvMatrix);
 
 	//传输光照参数
-	glUniform4fv(userData->testLoc, 1, testvec);
 	glUniform4fv(g_light.ambientColorLocation, 1, light.direction);
 	glUniform4fv(g_light.ambientColorLocation, 1, light.ambientColor);
 	glUniform4fv(g_light.diffuseColorLocation, 1, light.diffuseColor);

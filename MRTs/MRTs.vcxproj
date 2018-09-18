@@ -80,6 +80,10 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</GenerateManifest>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>E:\VS2013\Projects2013\yfOpenGLES3\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\VS2013\Projects2013\yfOpenGLES3\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>E:\VS2013\Projects2013\opengles3-book-master\External\Include;E:\VS2013\Projects2013\opengles3-book-master\Common\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -318,7 +322,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MRTs.c" />
+    <ClCompile Include="MRTs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h" />

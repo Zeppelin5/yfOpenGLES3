@@ -1,9 +1,8 @@
-﻿Build started 2018/9/14 10:05:28.
+﻿Build started 2018/9/18 19:28:17.
      1>Project "E:\VS2013\Projects2013\yfOpenGLES3\VertexArrayObjects\VertexArrayObjects.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          E:\VS2013\VC\bin\CL.exe /c /I"E:\VS2013\Projects2013\opengles3-book-master\External\Include" /I"E:\VS2013\Projects2013\opengles3-book-master\Common\Include" /Zi /nologo /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"VertexArrayObjects.dir\Debug\\" /Fd"VertexArrayObjects.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt main.cpp
          main.cpp
-     1>main.cpp(315): warning C4101: 'modelview' : unreferenced local variable
        Link:
          E:\VS2013\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_6\VertexArrayObjects\Debug\VertexArrayObjects.exe" /INCREMENTAL /NOLOGO ..\Common\Debug\Common.lib "C:\Program Files (x86)\ARM\Mali Developer Tools\Mali OpenGL ES Emulator 3.0.2.g694a9\libGLESv2.lib" "C:\Program Files (x86)\ARM\Mali Developer Tools\Mali OpenGL ES Emulator 3.0.2.g694a9\libEGL.lib" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/VS2013/Projects2013/OpenGLES3build0905/Chapter_6/VertexArrayObjects/Debug/VertexArrayObjects.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:/VS2013/Projects2013/OpenGLES3build0905/Chapter_6/VertexArrayObjects/Debug/VertexArrayObjects.lib" /MACHINE:X86 /SAFESEH  /machine:X86 VertexArrayObjects.dir\Debug\main.obj
          VertexArrayObjects.vcxproj -> E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_6\VertexArrayObjects\Debug\VertexArrayObjects.exe
@@ -11,4 +10,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.37
+Time Elapsed 00:00:00.64
