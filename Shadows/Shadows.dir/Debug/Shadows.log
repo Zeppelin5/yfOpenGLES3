@@ -1,0 +1,63 @@
+﻿Build started 2018/9/20 17:46:41.
+     1>Project "E:\VS2013\Projects2013\yfOpenGLES3\Shadows\Shadows.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         E:\VS2013\VC\bin\CL.exe /c /I"E:\VS2013\Projects2013\opengles3-book-master\External\Include" /I"E:\VS2013\Projects2013\opengles3-book-master\Common\Include" /Zi /nologo /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Shadows.dir\Debug\\" /Fd"Shadows.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt Shadows.c
+         Shadows.c
+     1>Shadows.c(139): warning C4013: 'stbi_load' undefined; assuming extern returning int
+     1>Shadows.c(139): warning C4047: 'initializing' : 'unsigned char *' differs in levels of indirection from 'int'
+     1>Shadows.c(146): warning C4013: 'printf' undefined; assuming extern returning int
+     1>Shadows.c(147): warning C4013: 'stbi_image_free' undefined; assuming extern returning int
+     1>Shadows.c(186): error C2039: 'cubeVAO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(186): error C2198: 'glGenVertexArrays' : too few arguments for call
+     1>Shadows.c(187): error C2039: 'cubeVBO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(187): error C2198: 'glGenBuffers' : too few arguments for call
+     1>Shadows.c(188): error C2039: 'cubeVAO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(188): error C2198: 'glBindVertexArray' : too few arguments for call
+     1>Shadows.c(189): error C2039: 'cubeVBO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(189): error C2198: 'glBindBuffer' : too few arguments for call
+     1>Shadows.c(195): error C2039: 'texIDcube' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(198): error C2039: 'floorVAO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(198): error C2198: 'glGenVertexArrays' : too few arguments for call
+     1>Shadows.c(199): error C2039: 'floorVBO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(199): error C2198: 'glGenBuffers' : too few arguments for call
+     1>Shadows.c(200): error C2039: 'floorVAO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(200): error C2198: 'glBindVertexArray' : too few arguments for call
+     1>Shadows.c(201): error C2039: 'floorVBO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(201): error C2198: 'glBindBuffer' : too few arguments for call
+     1>Shadows.c(207): error C2039: 'texIDfloor' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(242): error C2039: 'groundPositionVBO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(242): error C2198: 'glDeleteBuffers' : too few arguments for call
+     1>Shadows.c(243): error C2039: 'groundIndicesIBO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(243): error C2198: 'glDeleteBuffers' : too few arguments for call
+     1>Shadows.c(245): error C2039: 'cubePositionVBO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(245): error C2198: 'glDeleteBuffers' : too few arguments for call
+     1>Shadows.c(246): error C2039: 'cubeIndicesIBO' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(246): error C2198: 'glDeleteBuffers' : too few arguments for call
+     1>Shadows.c(249): error C2039: 'shadowMapBufferId' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(249): error C2198: 'glBindFramebuffer' : too few arguments for call
+     1>Shadows.c(252): error C2039: 'shadowMapBufferId' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(252): error C2198: 'glDeleteFramebuffers' : too few arguments for call
+     1>Shadows.c(253): error C2039: 'shadowMapTextureId' : is not a member of 'UserData'
+                 Shadows.c(152) : see declaration of 'UserData'
+     1>Shadows.c(253): error C2198: 'glDeleteTextures' : too few arguments for call
+     1>Done Building Project "E:\VS2013\Projects2013\yfOpenGLES3\Shadows\Shadows.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.23

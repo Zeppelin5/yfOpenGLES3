@@ -53,7 +53,7 @@ float vertices[] = {
 	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 };
 
-#define NUM_INSTANCES   100
+#define NUM_INSTANCES   10000
 #define POSITION_LOC    0
 #define TEXTRUE_LOC		1
 #define COLOR_LOC       2

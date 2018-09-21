@@ -1,9 +1,9 @@
 //yf's version
 #define STB_IMAGE_IMPLEMENTATION
-#include <stdlib.h>
+
+//#include <stdlib.h>
 #include "esUtil.h"
 #include "stb_image.h"
-
 float vertices[] = {
 	//-位置-					-纹理坐标-		-法线-
 	-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,		0.0f, 0.0f, -1.0f,
@@ -65,18 +65,16 @@ struct MaterialProperties
 	GLfloat specularExponent;//GLfloat specularExponent;
 };
 
-// This is a white light.
 struct LightProperties light = {
-	{ 1.0f, 1.0f, 1.0f },//directionLocation
-	{ 0.1f, 0.1f, 0.1f, 1.0f },	  //ambientColor;
-	{ 1.0f, 0.0f, 0.0f, 1.0f },	  //diffuseColor;
-	{ 1.0f, 0.0f, 0.0f, 1.0f } }; //specularColor;
-// Blue color material with white specular color.
+	{ 0.0f, -1.0f, -1.0f },			//direction{ 0.57735f, 0.57735f, 0.57735f }
+	{ 0.4f, 0.4f, 0.4f, 1.0f },		//ambientColor;
+	{ 1.0f, 1.0f, 1.0f, 1.0f },		//diffuseColor;
+	{ 0.5f, 0.5f, 0.5f, 1.0f } };	//specularColor;
 struct MaterialProperties material = {
-	{ 0.8f, 0.8f, 0.8f, 1.0f },
-	{ 1.0f, 1.0f, 1.0f, 1.0f },
-	{ 0.4f, 0.4f, 0.4f, 1.0f },
-	10.0f };
+	{ 0.8f, 0.8f, 0.8f, 1.0f },		 //ambientColor;
+	{ 1.0f, 1.0f, 1.0f, 1.0f },		 //diffuseColor;
+	{ 0.4f, 0.4f, 0.4f, 1.0f },		 //specularColor;
+	1.0f };						 //specularExponent;
 
 struct LightLocations
 {
@@ -93,8 +91,8 @@ struct MaterialLocations
 	GLint specularColorLocation;
 	GLint specularExponentLocation;
 };
-static struct LightLocations g_light;
-static struct MaterialLocations g_material;
+struct LightLocations g_light;
+struct MaterialLocations g_material;
 
 
 typedef struct
@@ -105,34 +103,18 @@ typedef struct
 	// Uniform locations
 	GLint  mvpLoc;
 	GLint  mvLoc;
-	GLuint mLoc;//模型矩阵的位置，顶点坐标左乘模型矩阵得到世界坐标
-	// Rotation angle
+	GLfloat	viewPos[3];
+	GLuint viewPosLoc;
+
 	GLfloat   angle;
 
-	// MVP matrix
 	ESMatrix  mvpMatrix;
 	ESMatrix  mvMatrix;
 
-	GLuint mVboIds[3];
-	GLuint mVaoId;
-
 	GLuint myVBO;
 	GLuint myVAO;
-	GLuint myEBO;
 
-	GLuint textureID;
-	GLuint samplerLoc;
-
-	GLfloat viewPosLoc[3];
 } UserData;
-
-const static GLuint VERTEX_POS_INDX = 0;//VERTEX_POS_INDX对应shader里location的位置
-const static GLuint VERTEX_COLOR_INDX = 1;
-const static GLuint VERTEX_TEXTURE_INDX = 2;
-const static GLint VERTEX_POS_SIZE = 3;
-const static GLint VERTEX_COLOR_SIZE = 4;
-const static GLint VERTEX_TEXTURE_SIZE = 2;
-const static GLsizei INDEX_NUMBER = 36;//索引的元素数量
 
 // Create a simple 2x2 texture image with four different colors
 void LoadTexture()
@@ -141,7 +123,7 @@ void LoadTexture()
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	// Load the texture
 	int width, height, nrChannels;
-	unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+	unsigned char *data = stbi_load("./Models/brick_DIFF.bmp", &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -159,11 +141,33 @@ void LoadTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
+GLuint LoadTextureFile(const char* filename)
+{
+	GLuint texID;
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_2D, texID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int width, height, nrChannels;
+	unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+		printf("Failed to load texture\n");
+	stbi_image_free(data);
+	return texID;
+}
+
 // Initialize the shader and program object
 //
 int Init(ESContext *esContext)
 {
-	UserData *userData = esContext->userData;
+	UserData *userData = (UserData *)esContext->userData;
 
 	const char vShaderStr[] =
 		"#version 300 es												\n"
@@ -179,14 +183,13 @@ int Init(ESContext *esContext)
 		"{																\n"
 		"	v_fragPos=vec3(u_mvMatrix * a_position);					\n"
 		"	v_texCoord=a_texCoord;										\n"
-		"	v_normal=a_normal;											\n"
+		"	v_normal=mat3(transpose(inverse(u_mvMatrix)))*a_normal;											\n"
 		"   gl_Position = u_mvpMatrix * a_position;						\n"
 		"}																\n";
 
 	const char fShaderStr[] =
 		"#version 300 es												\n"
 		"precision mediump float;										\n"
-
 		"struct LightProperties											\n"
 		"{																\n"
 		"	vec3 direction;												\n"
@@ -194,7 +197,6 @@ int Init(ESContext *esContext)
 		"	vec4 diffuseColor;											\n"
 		"	vec4 specularColor;											\n"
 		"};																\n"
-		"																\n"
 		"struct MaterialProperties										\n"
 		"{																\n"
 		"	vec4 ambientColor;											\n"
@@ -202,12 +204,12 @@ int Init(ESContext *esContext)
 		"	vec4 specularColor;											\n"
 		"	float specularExponent;										\n"
 		"};																\n"
-		"																\n"
 		"uniform LightProperties u_light;								\n"
 		"uniform MaterialProperties u_material;							\n"
-		"in vec3 v_fragPos;																				\n"
+		"in vec3 v_fragPos;																			\n"
 		"in vec2 v_texCoord;																		\n"
 		"in vec3 v_normal;																			\n"
+		"in vec3 c_viewPos;																			\n"
 		"out vec4 outColor;																			\n"
 		"uniform sampler2D s_texture;																\n"
 		"void main()																				\n"
@@ -215,28 +217,25 @@ int Init(ESContext *esContext)
 		"	vec4 color = u_light.ambientColor * u_material.ambientColor;							\n"//ambient
 		"	vec3 N = normalize(v_normal);															\n"
 		"	vec3 L = -normalize(u_light.direction);													\n"
-		"	float nDotL = max(dot(N,L), 0.0);														\n"
-		"	color += u_light.diffuseColor * u_material.diffuseColor * nDotL;						\n"//diffuse
-		//"	if (nDotL > 0.0)																		\n"
-		//"	{																						\n"
-		"		vec3 R = reflect(L,N);																\n"
-		"		vec3 viewPos = vec3(2.f,0.f,0.f);													\n"
-		"		vec3 V=normalize(viewPos-v_fragPos);														\n"
-		"		float VDotR = max(dot(V, R), 0.0);													\n"
-		"		float specularIntensity = 0.0;														\n"
-		"		if (VDotR > 0.0)																	\n"
-		"		{																					\n"
-		"			specularIntensity = pow(VDotR, u_material.specularExponent);					\n"
-		"		}																					\n"
-		"		color += u_light.specularColor * u_material.specularColor * specularIntensity;		\n"//specular
-		//"	}																						\n"
-		"   outColor =texture(s_texture,v_texCoord)+color;											\n"
+		"	float NDotL = max(dot(N,L), 0.0);														\n"
+		"	color += u_light.diffuseColor * u_material.diffuseColor * NDotL;						\n"//diffuse,Lambert
+		"	vec3 R = reflect(L,N);																	\n"
+		"	vec3 V=normalize(c_viewPos-v_fragPos);													\n"
+		"	float VDotR = max(dot(V, R), 0.0);														\n"
+		"	float specularIntensity = pow(VDotR, u_material.specularExponent);						\n"
+		"	color += u_light.specularColor * u_material.specularColor * specularIntensity;			\n"//specular,Phong
+		"   outColor =texture(s_texture,v_texCoord)*color;											\n"
 		"}																							\n";
 
 	// Load the shaders and get a linked program object
-	//7:50arrive home,8:30finish jump,9:00shower over,10:00 relax time,11:20 TV over
 	userData->programObject = esLoadProgram(vShaderStr, fShaderStr);
-	
+
+	GLuint diffuseMap = LoadTextureFile("./Models/brick_DIFF.bmp");
+	GLuint normapMap = LoadTextureFile("./Models/brick_NRM.bmp");
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, diffuseMap);
+
 	g_light.directionLocation = glGetUniformLocation(userData->programObject, "u_light.direction");
 	g_light.ambientColorLocation = glGetUniformLocation(userData->programObject, "u_light.ambientColor");
 	g_light.diffuseColorLocation = glGetUniformLocation(userData->programObject, "u_light.diffuseColor");
@@ -245,27 +244,22 @@ int Init(ESContext *esContext)
 	g_material.diffuseColorLocation = glGetUniformLocation(userData->programObject, "u_material.diffuseColor");
 	g_material.specularColorLocation = glGetUniformLocation(userData->programObject, "u_material.specularColor");
 	g_material.specularExponentLocation = glGetUniformLocation(userData->programObject, "u_material.specularExponent");
-	//The following error occurred in glUniform4fv: GL_INVALID_OPERATION
 
-	// Get the uniform locations
+	userData->viewPos[0] = 20.f;
+	userData->viewPos[1] = 20.f;
+	userData->viewPos[2] = 20.f;
+	userData->viewPosLoc = glGetUniformLocation(userData->programObject, "c_viewPos");
 	userData->mvpLoc = glGetUniformLocation(userData->programObject, "u_mvpMatrix");
 	userData->mvLoc = glGetUniformLocation(userData->programObject, "u_mvMatrix");
-	//userData->mLoc = glGetUniformLocation(userData->programObject, "u_mMatrix");
-	//// mvpMatrix在Update里用modelview和perspective算出来,
-	//// 然后再Draw里用glUniformMatrix4fv(userData->mvpLoc, 1, GL_FALSE, (GLfloat *)&userData->mvpMatrix)传给mvpLoc
+	userData->angle = 0.0f;
 
-	// Generate the vertex data
-	//userData->numIndices = esGenCube(1.0, &userData->vertices,
-	//	NULL, NULL, &userData->indices);
+
 
 	glGenVertexArrays(1, &userData->myVAO);
 	glBindVertexArray(userData->myVAO);
-
 	glGenBuffers(1, &userData->myVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, userData->myVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	//	-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,		0.0f, 0.0f, -1.0f,
 	// position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -276,11 +270,7 @@ int Init(ESContext *esContext)
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	// Starting rotation angle for the cube
-	userData->angle = 0.0f;
-
-	//userData->samplerLoc = glGetUniformLocation(userData->programObject, "s_texture");
-	LoadTexture();
+	//LoadTexture();
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -295,17 +285,16 @@ int Init(ESContext *esContext)
 //
 void Update(ESContext *esContext, float deltaTime)
 {
-	UserData *userData = esContext->userData;
+	UserData *userData = (UserData *)esContext->userData;
 	ESMatrix perspective;
 	float    aspect;
 
 	// Compute a rotation angle based on time to rotate the cube
-	userData->angle += (deltaTime * 70.0f);
+	userData->angle += (deltaTime * 90.0f);
 
 	if (userData->angle >= 360.0f)
-	{
 		userData->angle -= 360.0f;
-	}
+
 	// Generate a model view matrix to rotate/translate the cube
 	esMatrixLoadIdentity(&userData->mvMatrix);
 
@@ -313,7 +302,6 @@ void Update(ESContext *esContext, float deltaTime)
 	esTranslate(&userData->mvMatrix, 0.0, 0.0, -2.0);
 	// Rotate the cube这里是转动物体
 	esRotate(&userData->mvMatrix, userData->angle, 1.0, 0.0, 1.0);
-
 
 	// Compute the window aspect ratio
 	aspect = (GLfloat)esContext->width / (GLfloat)esContext->height;
@@ -331,7 +319,7 @@ void Update(ESContext *esContext, float deltaTime)
 //
 void Draw(ESContext *esContext)
 {
-	UserData *userData = esContext->userData;
+	UserData *userData = (UserData *)esContext->userData;
 
 	// Set the viewport
 	glViewport(0, 0, esContext->width, esContext->height);
@@ -347,8 +335,10 @@ void Draw(ESContext *esContext)
 	glUniformMatrix4fv(userData->mvpLoc, 1, GL_FALSE, (GLfloat *)&userData->mvpMatrix);
 	glUniformMatrix4fv(userData->mvLoc, 1, GL_FALSE, (GLfloat*)&userData->mvMatrix);
 
+	glUniform3fv(userData->viewPosLoc, 1, userData->viewPos);
+
 	//传输光照参数
-	glUniform4fv(g_light.ambientColorLocation, 1, light.direction);
+	glUniform3fv(g_light.directionLocation, 1, light.direction);
 	glUniform4fv(g_light.ambientColorLocation, 1, light.ambientColor);
 	glUniform4fv(g_light.diffuseColorLocation, 1, light.diffuseColor);
 	glUniform4fv(g_light.specularColorLocation, 1, light.specularColor);
@@ -370,11 +360,10 @@ void Draw(ESContext *esContext)
 //
 void Shutdown(ESContext *esContext)
 {
-	UserData *userData = esContext->userData;
+	UserData *userData = (UserData *)esContext->userData;
 
 	glDeleteVertexArrays(1, &userData->myVAO);
 	glDeleteBuffers(1, &userData->myVBO);
-	glDeleteBuffers(1, &userData->myEBO);
 	glDeleteProgram(userData->programObject);
 }
 
@@ -383,7 +372,7 @@ int esMain(ESContext *esContext)
 {
 	esContext->userData = malloc(sizeof(UserData));
 
-	esCreateWindow(esContext, "Simple_VertexShader", 320, 240, ES_WINDOW_RGB | ES_WINDOW_DEPTH);
+	esCreateWindow(esContext, "Simple_VertexShader", 400, 400, ES_WINDOW_RGB | ES_WINDOW_DEPTH);
 	
 	if (!Init(esContext))
 	{
@@ -396,4 +385,3 @@ int esMain(ESContext *esContext)
 
 	return GL_TRUE;
 }
-

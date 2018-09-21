@@ -1,9 +1,6 @@
-﻿Build started 2018/9/6 18:47:19.
-     1>Project "E:\VS2013\Projects2013\yfOpenGLES3\Instancing\Instancing.vcxproj" on node 3 (Rebuild target(s)).
-     1>CustomBuild:
-         Building Custom Rule E:/VS2013/Projects2013/opengles3-book-master/Chapter_7/Instancing/CMakeLists.txt
-         CMake does not need to re-run because E:/VS2013/Projects2013/OpenGLES3build0905/Chapter_7/Instancing/CMakeFiles/generate.stamp is up-to-date.
-       ClCompile:
+﻿Build started 2018/9/21 10:38:59.
+     1>Project "E:\VS2013\Projects2013\yfOpenGLES3\Instancing\Instancing.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
          E:\VS2013\VC\bin\CL.exe /c /I"E:\VS2013\Projects2013\opengles3-book-master\External\Include" /I"E:\VS2013\Projects2013\opengles3-book-master\Common\Include" /Zi /nologo /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Instancing.dir\Debug\\" /Fd"Instancing.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt Instancing.c
          Instancing.c
      1>Instancing.c(110): warning C4101: 'positions' : unreferenced local variable
@@ -15,8 +12,8 @@
      1>Common.lib(esUtil.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'Common.lib(esUtil.obj)' or at 'E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_7\Instancing\Debug\vc120.pdb'; linking object as if no debug info
      1>Common.lib(esUtil_win32.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'Common.lib(esUtil_win32.obj)' or at 'E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_7\Instancing\Debug\vc120.pdb'; linking object as if no debug info
          Instancing.vcxproj -> E:\VS2013\Projects2013\OpenGLES3build0905\Chapter_7\Instancing\Debug\Instancing.exe
-     1>Done Building Project "E:\VS2013\Projects2013\yfOpenGLES3\Instancing\Instancing.vcxproj" (Rebuild target(s)).
+     1>Done Building Project "E:\VS2013\Projects2013\yfOpenGLES3\Instancing\Instancing.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.51
+Time Elapsed 00:00:00.44
